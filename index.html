@@ -1,0 +1,430 @@
+<html><head><base href="https://investgame.example.com/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeu d'Investissement Amélioré</title>
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+        color: #333;
+    }
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .menu {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .menu-button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        transition: 0.3s;
+        border-radius: 5px;
+    }
+    .menu-button:hover {
+        background-color: #45a049;
+        transform: translateY(-2px);
+    }
+    .section {
+        background-color: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .crypto-list, .property-list, .shop-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    .crypto-item, .property-item, .shop-item {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+    .crypto-item:hover, .property-item:hover, .shop-item:hover {
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        transform: translateY(-5px);
+    }
+    .action-button {
+        background-color: #008CBA;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        margin: 4px 2px;
+        cursor: pointer;
+        transition: 0.3s;
+        border-radius: 5px;
+    }
+    .action-button:hover {
+        background-color: #007B9A;
+        transform: scale(1.05);
+    }
+    #money-display {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #4CAF50;
+    }
+    #clicker-tree {
+        width: 250px;
+        height: 250px;
+        background-image: url('https://img.freepik.com/vecteurs-libre/beaucoup-pommes-rouges-arbre-isole-fond-blanc_1308-56332.jpg');
+        background-size: cover;
+        margin: 0 auto;
+        cursor: pointer;
+        transition: transform 0.1s;
+        border-radius: 50%;
+    }
+    #clicker-tree:active {
+        transform: scale(0.95);
+    }
+    .property-image, .shop-image {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+    .stats {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+        font-size: 18px;
+    }
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black;
+    }
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 200px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -100px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div id="money-display">Argent: $0</div>
+    <div class="menu">
+        <button class="menu-button" onclick="showSection('crypto')">Crypto</button>
+        <button class="menu-button" onclick="showSection('property')">Immobilier</button>
+        <button class="menu-button" onclick="showSection('shops')">Magasins</button>
+        <button class="menu-button" onclick="showSection('clicker')">Arbre à Clic</button>
+        <button class="menu-button" onclick="showSection('stats')">Statistiques</button>
+    </div>
+
+    <div id="crypto" class="section" style="display:none;">
+        <h2>Investissement en Crypto</h2>
+        <div class="crypto-list" id="crypto-list"></div>
+    </div>
+
+    <div id="property" class="section" style="display:none;">
+        <h2>Investissement Immobilier</h2>
+        <div class="property-list" id="property-list"></div>
+    </div>
+
+    <div id="shops" class="section" style="display:none;">
+        <h2>Magasins</h2>
+        <div class="shop-list" id="shop-list"></div>
+    </div>
+
+    <div id="clicker" class="section" style="display:none;">
+        <h2>Arbre à Clic</h2>
+        <div id="clicker-tree"></div>
+        <button class="action-button" onclick="upgradeClicker()">Améliorer l'arbre ($<span id="upgrade-cost">100</span>)</button>
+        <p>Gain par clic: $<span id="click-value">1</span></p>
+    </div>
+
+    <div id="stats" class="section" style="display:none;">
+        <h2>Statistiques</h2>
+        <div class="stats">
+            <div class="tooltip">Revenu total par mois: $<span id="total-income">0</span>
+                <span class="tooltiptext">Revenu généré par vos propriétés et magasins</span>
+            </div>
+            <div class="tooltip">Valeur totale des actifs: $<span id="total-assets">0</span>
+                <span class="tooltiptext">Valeur totale de vos cryptos, propriétés et magasins</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let game = {
+    money: 1000,
+    cryptos: [
+        {name: "Bitcoin", price: 30000, owned: 0, buyPrice: 0, volatility: 0.05},
+        {name: "Ethereum", price: 2000, owned: 0, buyPrice: 0, volatility: 0.04},
+        {name: "Dogecoin", price: 0.25, owned: 0, buyPrice: 0, volatility: 0.1},
+        {name: "Cardano", price: 1, owned: 0, buyPrice: 0, volatility: 0.06}
+    ],
+    properties: [
+        {name: "Appartement", price: 100000, owned: 0, rent: 500, image: "https://www.vanupied.com/wp-content/uploads/68550354.jpg"},
+        {name: "Maison", price: 200000, owned: 0, rent: 1000, image: "https://prod-saint-gobain-fr.content.saint-gobain.io/sites/saint-gobain.fr/files/2022-04/maison-contemporaine-la-maison-saint-gobain01.jpg"},
+        {name: "Duplex", price: 150000, owned: 0, rent: 750, image: "https://www.blog-aterno.com/medias/amenagement-d-un-appartement-en-duplex.jpg"},
+        {name: "Studio", price: 50000, owned: 0, rent: 250, image: "https://www.mon-logement-etudiant.fr/wp-content/uploads/2020/08/studio-etudiant.jpg"},
+        {name: "Penthouse", price: 500000, owned: 0, rent: 2500, image: "https://www.gharjunction.com/img/blog/218.jpg"},
+        {name: "Villa", price: 1000000, owned: 0, rent: 5000, image: "https://st3.idealista.pt/news/arquivos/styles/fullwidth_xl/public/2023-02/media/image/200912673.jpg?VersionId=TvjBUnAHtEUTlc7w7tv6NcN6HdrYFszJ&itok=oM5UI4FD"}
+    ],
+    shops: [
+        {name: "Épicerie", price: 50000, owned: 0, income: 1000, level: 1, image: "https://www.pie.paris/wp-content/uploads/2023/08/10-epiceries-fines-etrangeres.png"},
+        {name: "Café", price: 75000, owned: 0, income: 1500, level: 1, image: "https://media.istockphoto.com/id/1400194993/fr/photo/cappuccino-art.jpg?s=612x612&w=0&k=20&c=04mmnu_-2S-v1vdz9fFeCVQbnvCcxqat2dYB8ZYI76g="},
+        {name: "Librairie", price: 100000, owned: 0, income: 2000, level: 1, image: "https://media.timeout.com/images/105649049/image.jpg"},
+        {name: "Boutique de vêtements", price: 150000, owned: 0, income: 3000, level: 1, image: "https://le-vestiaire.boutique/wp-content/uploads/2023/09/LE-VESTIAIRE-GA%C2%A9INFINITYGRAPHIC.jpg"},
+        {name: "Restaurant", price: 200000, owned: 0, income: 4000, level: 1, image: "https://media-cdn.tripadvisor.com/media/photo-s/1a/ec/ba/06/bar-brasserie.jpg"},
+        {name: "Cinéma", price: 500000, owned: 0, income: 10000, level: 1, image: "https://mairie-rouy.fr/static/37649084b098768b79deb9340cf18523/cinema.jpg"}
+    ],
+    clickValue: 1,
+    clickerLevel: 1
+};
+
+function saveGame() {
+    localStorage.setItem('investGameSave', JSON.stringify(game));
+}
+
+function loadGame() {
+    let savedGame = localStorage.getItem('investGameSave');
+    if (savedGame) {
+        game = JSON.parse(savedGame);
+        updateAll();
+    }
+}
+
+function updateAll() {
+    updateMoneyDisplay();
+    updateCryptoList();
+    updatePropertyList();
+    updateShopList();
+    updateClickerValue();
+    updateStats();
+}
+
+function updateMoneyDisplay() {
+    document.getElementById('money-display').innerHTML = `Argent: $${game.money.toFixed(2)}`;
+    saveGame();
+}
+
+function showSection(section) {
+    document.querySelectorAll('.section').forEach(el => el.style.display = 'none');
+    document.getElementById(section).style.display = 'block';
+}
+
+function updateCryptoList() {
+    let cryptoList = document.getElementById('crypto-list');
+    cryptoList.innerHTML = '';
+    game.cryptos.forEach((crypto, index) => {
+        let totalValue = crypto.price * crypto.owned;
+        let item = document.createElement('div');
+        item.className = 'crypto-item';
+        item.innerHTML = `
+            <h3>${crypto.name}</h3>
+            <p>Prix: $${crypto.price.toFixed(2)}</p>
+            <p>Possédé: ${crypto.owned}</p>
+            <p>Valeur actuelle: $${totalValue.toFixed(2)}</p>
+            <button class="action-button" onclick="buyCrypto(${index})">Acheter</button>
+            <button class="action-button" onclick="buyMaxCrypto(${index})">Acheter Max</button>
+            <button class="action-button" onclick="sellCrypto(${index})">Vendre</button>
+            <button class="action-button" onclick="sellAllCrypto(${index})">Tout Vendre</button>
+        `;
+        cryptoList.appendChild(item);
+    });
+}
+
+function updatePropertyList() {
+    let propertyList = document.getElementById('property-list');
+    propertyList.innerHTML = '';
+    game.properties.forEach((property, index) => {
+        let item = document.createElement('div');
+        item.className = 'property-item';
+        item.innerHTML = `
+            <img src="${property.image}" class="property-image" alt="${property.name}">
+            <h3>${property.name}</h3>
+            <p>Prix: $${property.price.toFixed(2)}</p>
+            <p>Loyers: $${property.rent}/mois</p>
+            <p>Possédé: ${property.owned}</p>
+            <button class="action-button" onclick="buyProperty(${index})">Acheter</button>
+        `;
+        propertyList.appendChild(item);
+    });
+}
+
+function updateShopList() {
+    let shopList = document.getElementById('shop-list');
+    shopList.innerHTML = '';
+    game.shops.forEach((shop, index) => {
+        let item = document.createElement('div');
+        item.className = 'shop-item';
+        item.innerHTML = `
+            <img src="${shop.image}" class="shop-image" alt="${shop.name}">
+            <h3>${shop.name}</h3>
+            <p>Prix: $${shop.price.toFixed(2)}</p>
+            <p>Revenu: $${shop.income}/mois</p>
+            <p>Niveau: ${shop.level}</p>
+            <p>Possédé: ${shop.owned}</p>
+            <button class="action-button" onclick="buyShop(${index})">Acheter</button>
+            <button class="action-button" onclick="upgradeShop(${index})">Améliorer ($${(shop.price * 0.5).toFixed(2)})</button>
+        `;
+        shopList.appendChild(item);
+    });
+}
+
+function updateClickerValue() {
+    document.getElementById('click-value').innerText = game.clickValue;
+    document.getElementById('upgrade-cost').innerText = (100 * game.clickerLevel).toFixed(2);
+}
+
+function updateStats() {
+    let totalIncome = game.properties.reduce((sum, prop) => sum + prop.rent * prop.owned, 0) +
+                      game.shops.reduce((sum, shop) => sum + shop.income * shop.owned, 0);
+    let totalAssets = game.cryptos.reduce((sum, crypto) => sum + crypto.price * crypto.owned, 0) +
+                      game.properties.reduce((sum, prop) => sum + prop.price * prop.owned, 0) +
+                      game.shops.reduce((sum, shop) => sum + shop.price * shop.owned, 0);
+    
+    document.getElementById('total-income').innerText = totalIncome.toFixed(2);
+    document.getElementById('total-assets').innerText = totalAssets.toFixed(2);
+}
+
+function buyCrypto(index) {
+    let crypto = game.cryptos[index];
+    if (game.money >= crypto.price) {
+        game.money -= crypto.price;
+        crypto.owned += 1;
+        crypto.buyPrice = crypto.price;
+        updateAll();
+    }
+}
+
+function buyMaxCrypto(index) {
+    let crypto = game.cryptos[index];
+    let maxAmount = Math.floor(game.money / crypto.price);
+    if (maxAmount > 0) {
+        game.money -= maxAmount * crypto.price;
+        crypto.owned += maxAmount;
+        crypto.buyPrice = crypto.price;
+        updateAll();
+    }
+}
+
+function sellCrypto(index) {
+    let crypto = game.cryptos[index];
+    if (crypto.owned > 0) {
+        game.money += crypto.price;
+        crypto.owned -= 1;
+        updateAll();
+    }
+}
+
+function sellAllCrypto(index) {
+    let crypto = game.cryptos[index];
+    if (crypto.owned > 0) {
+        game.money += crypto.price * crypto.owned;
+        crypto.owned = 0;
+        updateAll();
+    }
+}
+
+function buyProperty(index) {
+    let property = game.properties[index];
+    if (game.money >= property.price) {
+        game.money -= property.price;
+        property.owned += 1;
+        updateAll();
+    }
+}
+
+function buyShop(index) {
+    let shop = game.shops[index];
+    if (game.money >= shop.price) {
+        game.money -= shop.price;
+        shop.owned += 1;
+        updateAll();
+    }
+}
+
+function upgradeShop(index) {
+    let shop = game.shops[index];
+    let upgradeCost = shop.price * 0.5;
+    if (game.money >= upgradeCost) {
+        game.money -= upgradeCost;
+        shop.level += 1;
+        shop.income *= 1.5;
+        updateAll();
+    }
+}
+
+function clickTree() {
+    game.money += game.clickValue;
+    updateAll();
+}
+
+function upgradeClicker() {
+    let upgradeCost = 100 * game.clickerLevel;
+    if (game.money >= upgradeCost) {
+        game.money -= upgradeCost;
+        game.clickValue += 1;
+        game.clickerLevel += 1;
+        updateAll();
+    }
+}
+
+function applyVolatility() {
+    game.cryptos.forEach(crypto => {
+        let changePercent = (Math.random() * crypto.volatility * 2) - crypto.volatility;
+        crypto.price = Math.max(0.01, crypto.price + crypto.price * changePercent);
+    });
+    updateAll();
+}
+
+function collectIncome() {
+    let income = game.properties.reduce((sum, prop) => sum + prop.rent * prop.owned, 0) +
+                 game.shops.reduce((sum, shop) => sum + shop.income * shop.owned, 0);
+    game.money += income;
+    updateAll();
+}
+
+setInterval(applyVolatility, 10000);
+setInterval(collectIncome, 60000);
+
+document.getElementById('clicker-tree').addEventListener('click', clickTree);
+
+loadGame();
+updateAll();
+</script>
+</body>
+</html>
